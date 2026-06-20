@@ -137,7 +137,7 @@ export const ProductDetail = ({ model, onBack, onAddToCart }) => {
   return (
     <div className="w-full md:w-[85%] lg:w-[75%] mx-auto pt-xs md:pt-md pb-xl flex flex-col gap-xs md:gap-sm">
       {/* Tarjeta Principal */}
-      <div className="relative bg-surface-container-lowest border-y sm:border border-outline-variant sm:rounded-DEFAULT shadow-sm">
+      <div className="relative bg-surface-container-lowest sm:rounded-DEFAULT shadow-sm p-4 md:p-8">
 
         {/* ── HEADER CELESTE: back button + info ── */}
         <div className="bg-surface-container-low -mx-4 md:-mx-8 -mt-4 md:-mt-8 px-4 md:px-8 pt-4 md:pt-8 pb-4 md:pb-6 rounded-t-DEFAULT border-b border-outline-variant/20">
@@ -188,7 +188,7 @@ export const ProductDetail = ({ model, onBack, onAddToCart }) => {
         </div>
 
         {/* ── Grid Principal ── */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-sm md:gap-gutter p-4 md:p-8 pt-sm md:pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-sm md:gap-gutter pt-sm md:pt-6">
           {/* Columna Izquierda: Imagen del modelo */}
           <div className="relative md:col-span-5 flex items-center justify-center mx-auto rounded-sm overflow-hidden p-4 aspect-square max-h-75 md:max-h-none">
 
@@ -395,7 +395,7 @@ export const ProductDetail = ({ model, onBack, onAddToCart }) => {
           )}
 
           {/* Selector de Cantidad y Botón de WhatsApp / Carrito */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-sm border-t border-b border-outline-variant py-md mt-sm">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-sm border-t border-outline-variant py-md mt-sm">
             {selectedVariant && (selectedVariant.status === 'Disponible' || !selectedVariant.status) ? (
               <>
                 <div className="flex items-center justify-between sm:justify-start gap-4">
