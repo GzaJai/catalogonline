@@ -4,7 +4,10 @@ import { Modal } from '../../../shared/components/Modal';
 import { fetchProducts, createProduct, updateProduct, deleteProduct } from '../../../services/productApi';
 import { uploadImageToCloudinary } from '../../../services/imageUpload';
 
-const EMPTY_FORM = { title: '', category: '', price: '', originalPrice: '', image: '', isNew: false, badge: '' };
+const EMPTY_FORM = {
+  title: '', category: '', price: '', originalPrice: '', image: '', isNew: false, badge: '',
+  model_id: '', storage: '', color: '', battery: '', condition: '', status: 'Disponible'
+};
 
 // ── Helpers de precio ──
 const parsePriceNum = (str) => {
@@ -104,6 +107,12 @@ export const AdminDashboard = ({ onLogout }) => {
       image: product.image || '',
       isNew: product.isNew === true || String(product.isNew).toLowerCase() === 'true',
       badge: product.badge || '',
+      model_id: product.model_id || '',
+      storage: product.storage || '',
+      color: product.color || '',
+      battery: product.battery || '',
+      condition: product.condition || '',
+      status: product.status || 'Disponible',
     });
 
     // Precargar precio base y descuento desde los valores guardados
@@ -274,9 +283,11 @@ export const AdminDashboard = ({ onLogout }) => {
                   <tr className="bg-surface-container">
                     <th className="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider px-3 py-2.5 border-b border-outline-variant w-[60px]">ID</th>
                     <th className="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider px-3 py-2.5 border-b border-outline-variant">Producto</th>
+                    <th className="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider px-3 py-2.5 border-b border-outline-variant hidden lg:table-cell">Modelo</th>
                     <th className="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider px-3 py-2.5 border-b border-outline-variant hidden md:table-cell">Categoría</th>
                     <th className="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider px-3 py-2.5 border-b border-outline-variant hidden sm:table-cell">Etiqueta</th>
                     <th className="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider px-3 py-2.5 border-b border-outline-variant">Precio</th>
+                    <th className="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider px-3 py-2.5 border-b border-outline-variant hidden sm:table-cell">Estado</th>
                     <th className="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider px-3 py-2.5 border-b border-outline-variant w-[100px]">Acciones</th>
                   </tr>
                 </thead>
@@ -298,6 +309,15 @@ export const AdminDashboard = ({ onLogout }) => {
                           )}
                           <span className="text-body-sm font-body-md text-on-surface line-clamp-1">{product.title}</span>
                         </div>
+                      </td>
+                      <td className="px-3 py-2.5 hidden lg:table-cell">
+                        {product.model_id ? (
+                          <code className="text-[10px] bg-surface-container-high text-on-surface-variant px-1.5 py-0.5 rounded-DEFAULT">
+                            {product.model_id}
+                          </code>
+                        ) : (
+                          <span className="text-[10px] text-on-surface-variant opacity-40">—</span>
+                        )}
                       </td>
                       <td className="px-3 py-2.5 text-body-sm font-body-md text-on-surface-variant hidden md:table-cell">
                         <span className="bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded-DEFAULT text-[10px] font-label-sm uppercase">
@@ -325,8 +345,49 @@ export const AdminDashboard = ({ onLogout }) => {
                           )}
                         </div>
                       </td>
+                      <td className="px-3 py-2.5 hidden sm:table-cell">
+                        {product.status === 'Disponible' ? (
+                          <span className="text-[10px] text-success font-semibold uppercase tracking-wider bg-success-container px-2 py-0.5 rounded-DEFAULT">
+                            {product.status}
+                          </span>
+                        ) : product.status === 'Reservado' ? (
+                          <span className="text-[10px] text-warning font-semibold uppercase tracking-wider bg-warning-container px-2 py-0.5 rounded-DEFAULT">
+                            {product.status}
+                          </span>
+                        ) : product.status === 'Vendido' ? (
+                          <span className="text-[10px] text-on-surface-variant font-semibold uppercase tracking-wider bg-surface-container-high px-2 py-0.5 rounded-DEFAULT">
+                            {product.status}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-on-surface-variant opacity-40">—</span>
+                        )}
+                      </td>
                       <td className="px-3 py-2.5">
                         <div className="flex items-center gap-1">
+                          {/* Status toggle (Disponible ↔ Vendido) */}
+                          <button
+                            onClick={async () => {
+                              const newStatus = product.status === 'Disponible' ? 'Vendido' : 'Disponible';
+                              try {
+                                await updateProduct(product.id, { ...product, status: newStatus });
+                                showToast(`Estado cambiado a "${newStatus}"`);
+                                await loadProducts();
+                              } catch (err) {
+                                showToast(err.message || 'Error al cambiar estado', 'error');
+                              }
+                            }}
+                            className={`p-1.5 rounded-DEFAULT transition-colors cursor-pointer ${
+                              product.status === 'Disponible'
+                                ? 'text-success hover:bg-success-container'
+                                : 'text-on-surface-variant hover:bg-surface-container-highest'
+                            }`}
+                            aria-label={`Cambiar estado de ${product.title}`}
+                            title={product.status === 'Disponible' ? 'Marcar como Vendido' : 'Marcar como Disponible'}
+                          >
+                            <span className="material-symbols-outlined text-[18px]" data-icon={product.status === 'Disponible' ? 'toggle_on' : 'toggle_off'}>
+                              {product.status === 'Disponible' ? 'toggle_on' : 'toggle_off'}
+                            </span>
+                          </button>
                           <button
                             onClick={() => openEditModal(product)}
                             className="p-1.5 text-on-surface-variant hover:text-secondary hover:bg-surface-container-highest rounded-DEFAULT transition-colors cursor-pointer"
@@ -483,6 +544,113 @@ export const AdminDashboard = ({ onLogout }) => {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* ——— Sección: Detalles de Variante (para celulares usados) ——— */}
+            <div className="md:col-span-2 border-t border-outline-variant pt-md mt-sm">
+              <details className="group">
+                <summary className="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider cursor-pointer select-none hover:text-primary transition-colors list-none flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[16px] group-open:rotate-90 transition-transform">chevron_right</span>
+                  Variante de producto (celulares usados)
+                  <span className="text-[10px] font-body-md text-primary ml-1">Opcional</span>
+                </summary>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-md mt-md">
+                  <div>
+                    <label htmlFor="prod-model-id" className="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider block mb-1">
+                      Model ID
+                    </label>
+                    <input
+                      id="prod-model-id"
+                      type="text"
+                      value={form.model_id}
+                      onChange={(e) => setForm({ ...form, model_id: e.target.value })}
+                      className="w-full bg-surface-container-highest border border-outline-variant rounded-DEFAULT py-2 px-3 text-body-md font-body-md text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary outline-none placeholder:text-on-surface-variant"
+                      placeholder="Ej: iphone-15-pro"
+                    />
+                    <p className="text-body-sm font-body-md text-on-surface-variant mt-1">
+                      Agrupador de variantes. Mismo ID = mismo modelo.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label htmlFor="prod-storage" className="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider block mb-1">
+                      Almacenamiento
+                    </label>
+                    <input
+                      id="prod-storage"
+                      type="text"
+                      value={form.storage}
+                      onChange={(e) => setForm({ ...form, storage: e.target.value })}
+                      className="w-full bg-surface-container-highest border border-outline-variant rounded-DEFAULT py-2 px-3 text-body-md font-body-md text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary outline-none placeholder:text-on-surface-variant"
+                      placeholder="Ej: 128GB, 256GB"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="prod-color" className="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider block mb-1">
+                      Color
+                    </label>
+                    <input
+                      id="prod-color"
+                      type="text"
+                      value={form.color}
+                      onChange={(e) => setForm({ ...form, color: e.target.value })}
+                      className="w-full bg-surface-container-highest border border-outline-variant rounded-DEFAULT py-2 px-3 text-body-md font-body-md text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary outline-none placeholder:text-on-surface-variant"
+                      placeholder="Ej: Titanio Negro"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="prod-battery" className="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider block mb-1">
+                      Salud de Batería
+                    </label>
+                    <input
+                      id="prod-battery"
+                      type="text"
+                      value={form.battery}
+                      onChange={(e) => setForm({ ...form, battery: e.target.value })}
+                      className="w-full bg-surface-container-highest border border-outline-variant rounded-DEFAULT py-2 px-3 text-body-md font-body-md text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary outline-none placeholder:text-on-surface-variant"
+                      placeholder="Ej: 98%, 100%"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="prod-condition" className="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider block mb-1">
+                      Estado Físico
+                    </label>
+                    <select
+                      id="prod-condition"
+                      value={form.condition}
+                      onChange={(e) => setForm({ ...form, condition: e.target.value })}
+                      className="w-full bg-surface-container-highest border border-outline-variant rounded-DEFAULT py-2 px-3 text-body-md font-body-md text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary outline-none cursor-pointer"
+                    >
+                      <option value="">Seleccionar...</option>
+                      <option value="Nuevo">Nuevo</option>
+                      <option value="Sellado">Sellado</option>
+                      <option value="Grado A">Grado A</option>
+                      <option value="Grado B">Grado B</option>
+                      <option value="Grado C">Grado C</option>
+                      <option value="Para reparar">Para reparar</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="prod-status" className="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider block mb-1">
+                      Estado de Stock
+                    </label>
+                    <select
+                      id="prod-status"
+                      value={form.status}
+                      onChange={(e) => setForm({ ...form, status: e.target.value })}
+                      className="w-full bg-surface-container-highest border border-outline-variant rounded-DEFAULT py-2 px-3 text-body-md font-body-md text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary outline-none cursor-pointer"
+                    >
+                      <option value="Disponible">Disponible</option>
+                      <option value="Reservado">Reservado</option>
+                      <option value="Vendido">Vendido</option>
+                    </select>
+                  </div>
+                </div>
+              </details>
             </div>
 
             {/* Columna Derecha: Carga de Imagen y Vista Previa */}

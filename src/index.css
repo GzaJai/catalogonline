@@ -33,6 +33,12 @@
   --color-on-error: #ffffff;
   --color-error-container: #ffdad6;
   --color-on-error-container: #93000a;
+  --color-success: #1b7c32;
+  --color-success-container: #d7f0db;
+  --color-on-success: #ffffff;
+  --color-warning: #a8621a;
+  --color-warning-container: #ffedd5;
+  --color-on-warning: #ffffff;
   --color-primary-fixed: #d5e3ff;
   --color-primary-fixed-dim: #afc8f2;
   --color-on-primary-fixed: #001c3b;

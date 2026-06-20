@@ -84,6 +84,38 @@ export async function fetchProducts() {
 }
 
 /**
+ * Agrupa productos planos por model_id.
+ * Útil para el frontend cuando la API NO devuelve grouped=true.
+ *
+ * Cada modelo agrupado tiene:
+ *   { model_id, title, category, image, variants: [...] }
+ *
+ * Los productos sin model_id se devuelven como modelos individuales.
+ */
+export function groupByModel(products) {
+  const grouped = {};
+  products.forEach(p => {
+    const key = p.model_id && String(p.model_id).trim()
+      ? String(p.model_id).trim()
+      : `single-${p.id}`;
+
+    if (!grouped[key]) {
+      grouped[key] = {
+        model_id: key,
+        title: p.title || '',
+        category: p.category || '',
+        image: p.image || '',
+        variants: [],
+      };
+    }
+    grouped[key].variants.push(p);
+    if (p.title && !grouped[key].title) grouped[key].title = p.title;
+    if (p.image && !grouped[key].image) grouped[key].image = p.image;
+  });
+  return Object.values(grouped);
+}
+
+/**
  * Helper interno para POST requests (usa text/plain para evitar CORS preflight).
  *
  * IMPORTANTE: Google Apps Script NO expone HTTP headers en doPost(e).
